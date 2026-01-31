@@ -1,9 +1,22 @@
 services:
-  minio:
-    image: quay.io/minio/minio:latest
+  nginx:
+    image: nginx:stable-alpine3.23-perl
+    hostname: nginx
     ports:
+      - "8080:80"
+      - "8443:443"
       - "9000:9000"
       - "9001:9001"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./certs:/etc/nginx/certs:ro
+    networks:
+      - network-minio
+    depends_on:
+      - minio
+
+  minio:
+    image: quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z
     command: [ "server", "--console-address", ":9001", "/data" ]
     volumes:
       - data-minio:/data
@@ -12,22 +25,29 @@ services:
       MINIO_ROOT_PASSWORD: beak-lamp-blind
     healthcheck:
         test: ["CMD", "mc", "ready", "local"]
-        interval: 10s
-        timeout: 5s
+        interval: 5s
+        timeout: 1s
         retries: 5
+    networks:
+      - network-minio
 
   minio-buckets:
-    image: quay.io/minio/mc:latest
+    image: quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z
     depends_on:
       - minio
     restart: on-failure
     entrypoint: >
       /bin/sh -c "
+      sleep 1;
       /usr/bin/mc alias set dockerminio http://minio:9000 root beak-lamp-blind;
       /usr/bin/mc mb dockerminio/test;
       exit 0;
       "
+    networks:
+      - network-minio
 
 volumes:
     data-minio:
 
+networks:
+    network-minio:

@@ -32,11 +32,15 @@
         { pkgs }:
         {
           default = pkgs.mkShellNoCC {
-            # The Nix packages provided in the environment
-            # Add any you need here
             packages = with pkgs; [
+              # Prod dependency
               podman
               podman-compose
+              nginx
+              openssl
+
+              # Dev dependency
+              yaml-language-server
             ];
 
             # Set any environment variables for your dev shell
