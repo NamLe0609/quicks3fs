@@ -38,6 +38,7 @@
               podman-compose
               nginx
               openssl
+              curlFull
             ];
 
             # Set any environment variables for your dev shell
