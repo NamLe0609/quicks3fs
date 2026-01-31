@@ -38,9 +38,6 @@
               podman-compose
               nginx
               openssl
-
-              # Dev dependency
-              yaml-language-server
             ];
 
             # Set any environment variables for your dev shell
