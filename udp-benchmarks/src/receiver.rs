@@ -12,6 +12,7 @@ fn receiver() -> std::io::Result<()> {
     let socket = Socket::new(Domain::IPV4, Type::DGRAM, Some(Protocol::UDP))?;
     let buffer_size = 8 * 1024 * 1024;
     socket.set_recv_buffer_size(buffer_size)?;
+    socket.set_nonblocking(true)?;
     let mut buf = [MaybeUninit::<u8>::uninit(); 1500];
 
     let address: SocketAddr = "192.168.8.227:12345".parse().unwrap();
@@ -30,9 +31,16 @@ fn receiver() -> std::io::Result<()> {
     let mut packet_received = 0;
     let mut bytes_received = 0;
     while timer.elapsed() < test_duration {
-        let number_of_bytes = socket.recv(&mut buf)?;
-        packet_received += 1;
-        bytes_received += number_of_bytes;
+        match socket.recv(&mut buf) {
+            Ok(number_of_bytes) => {
+                packet_received += 1;
+                bytes_received += number_of_bytes;
+            }
+            Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => continue,
+            Err(e) => {
+                return Err(e);
+            }
+        }
     }
 
     let duration = timer.elapsed();

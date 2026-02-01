@@ -21,20 +21,26 @@ fn sender() -> std::io::Result<()> {
     let socket = Socket::new(Domain::IPV4, Type::DGRAM, Some(Protocol::UDP))?;
     let buffer_size = 8 * 1024 * 1024;
     socket.set_send_buffer_size(buffer_size)?;
-    let mut buf = [0u8; 1500];
+    socket.set_nonblocking(true)?;
 
     let receiver_address: SocketAddr = "192.168.8.227:12345".parse().unwrap();
 
     println!("Press CTRL+C to stop sending...");
 
+    let mut buf = [0u8; 1500];
     let start = Instant::now();
     let mut packet_sent = 0;
     let mut bytes_sent = 0;
 
     while running.load(Ordering::SeqCst) {
-        let number_of_bytes = socket.send_to(&mut buf, &receiver_address.into())?;
-        packet_sent += 1;
-        bytes_sent += number_of_bytes;
+        match socket.send_to(&mut buf, &receiver_address.into()) {
+            Ok(number_of_bytes) => {
+                packet_sent += 1;
+                bytes_sent += number_of_bytes;
+            }
+            Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => continue,
+            Err(e) => return Err(e),
+        }
     }
 
     let duration = start.elapsed();
