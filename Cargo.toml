@@ -10,5 +10,5 @@ minio = "0.3.0"
 resolver = "2"
 
 members = [
-    "udp-benchmark",
+    "udp-benchmarks",
 ]
