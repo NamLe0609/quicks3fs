@@ -1,3 +1,4 @@
+use core_affinity;
 use ctrlc;
 use socket2::{Domain, Protocol, Socket, Type};
 use std::net::SocketAddr;
@@ -10,14 +11,21 @@ fn main() {
 }
 
 fn sender() -> std::io::Result<()> {
+    // Pin receiver to core 0
+    let core_ids = core_affinity::get_core_ids().unwrap();
+    if let Some(&core_id) = core_ids.first() {
+        core_affinity::set_for_current(core_id);
+    }
+
+    // Let CTRL+C quit but also output results
     let running = Arc::new(AtomicBool::new(true));
     let r = running.clone();
-
     ctrlc::set_handler(move || {
         r.store(false, Ordering::SeqCst);
     })
     .expect("Error setting Ctrl-C handler");
 
+    // Socket setup
     let socket = Socket::new(Domain::IPV4, Type::DGRAM, Some(Protocol::UDP))?;
     let buffer_size = 8 * 1024 * 1024;
     socket.set_send_buffer_size(buffer_size)?;

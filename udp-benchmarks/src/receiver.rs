@@ -9,6 +9,12 @@ fn main() {
 }
 
 fn receiver() -> std::io::Result<()> {
+    // Pin receiver to core 0
+    let core_ids = core_affinity::get_core_ids().unwrap();
+    if let Some(&core_id) = core_ids.first() {
+        core_affinity::set_for_current(core_id);
+    }
+
     let socket = Socket::new(Domain::IPV4, Type::DGRAM, Some(Protocol::UDP))?;
     let buffer_size = 8 * 1024 * 1024;
     socket.set_recv_buffer_size(buffer_size)?;
