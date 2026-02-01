@@ -6,3 +6,11 @@ edition = "2024"
 [dependencies]
 ctrlc = "3.5.1"
 socket2 = "0.6.2"
+
+[[bin]]
+name = "sender"
+path = "src/sender.rs"
+
+[[bin]]
+name = "receiver"
+path = "src/receiver.rs"
