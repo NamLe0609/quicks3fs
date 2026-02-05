@@ -6,6 +6,7 @@ use aws_sigv4::{
 use http::{HeaderMap, HeaderName, HeaderValue, Method, Request, Uri, Version};
 use std::time::SystemTime;
 
+#[derive(Clone)]
 pub struct AwsCredential {
     access_key: String,
     region: String,
@@ -66,7 +67,7 @@ impl S3Request {
 
     pub fn build_and_sign(
         self,
-        credentials: AwsCredential,
+        credentials: &AwsCredential,
     ) -> Result<reqwest::Request, Box<dyn std::error::Error>> {
         let mut request = Request::builder()
             .method(self.method)
@@ -77,8 +78,8 @@ impl S3Request {
         *request.headers_mut() = self.headers;
 
         let creds = Credentials::new(
-            credentials.access_key,
-            credentials.secret_key,
+            &credentials.access_key,
+            &credentials.secret_key,
             None,
             None,
             "s3",
