@@ -36,13 +36,9 @@ services:
     depends_on:
       - minio
     restart: on-failure
-    entrypoint: >
-      /bin/sh -c "
-      sleep 1;
-      /usr/bin/mc alias set dockerminio http://minio:9000 root beak-lamp-blind;
-      /usr/bin/mc mb dockerminio/test;
-      exit 0;
-      "
+    volumes:
+      - ./scripts/setup-bucket.sh:/home/setup-bucket.sh
+    entrypoint: /home/setup-bucket.sh
     networks:
       - network-minio
 
