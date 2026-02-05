@@ -1,0 +1,17 @@
+# Dockerfile.caddy
+FROM caddy:2.11.2-builder AS builder
+
+RUN git clone https://github.com/quic-go/quic-go /go/quic-go-modified
+RUN git clone https://github.com/caddyserver/caddy /go/caddy
+
+# Increase quic-go's max MTU values
+RUN sed -i 's/const MaxPacketBufferSize = 1452/const MaxPacketBufferSize = 16336/' /go/quic-go-modified/internal/protocol/protocol.go
+RUN grep "const MaxPacketBufferSize" /go/quic-go-modified/internal/protocol/protocol.go
+
+WORKDIR /go/caddy
+RUN go mod edit -replace github.com/quic-go/quic-go=/go/quic-go-modified
+
+RUN go build -o /usr/bin/caddy ./cmd/caddy
+
+FROM caddy:2.11.2-alpine
+COPY --from=builder /usr/bin/caddy /usr/bin/caddy

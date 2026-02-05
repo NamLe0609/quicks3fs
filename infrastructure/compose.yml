@@ -2,22 +2,42 @@ services:
   nginx:
     image: nginx:stable-alpine3.23-perl
     hostname: nginx
-    ports:
-      - "8080:80"
-      - "8443:443/tcp"
-      - "8443:443/udp"
-      - "9001:9001"
     volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx.conf:/etc/nginx/nginx.conf
       - ./certs:/etc/nginx/certs:ro
-    networks:
-      - network-minio
+    network_mode: host
     depends_on:
       - minio
 
+  caddy:
+    build:
+      context: .
+      dockerfile: Dockerfile.caddy
+    hostname: caddy
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - ./certs:/etc/caddy/certs:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    network_mode: host
+    depends_on:
+      - minio
+    restart: unless-stopped
+
+  haproxy:
+    image: haproxy:3.3.7
+    hostname: haproxy
+    volumes:
+      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+      - ./certs:/etc/ssl/certs:ro
+    network_mode: host
+    depends_on:
+      - minio
+    restart: unless-stopped
+
   minio:
     image: quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z
-    command: [ "server", "--console-address", ":9001", "/data" ]
+    command: [ "server", "--console-address", ":10000", "/data" ]
     volumes:
       - data-minio:/data
     environment:
@@ -28,30 +48,26 @@ services:
         interval: 5s
         timeout: 1s
         retries: 5
-    networks:
-      - network-minio
+    network_mode: host
 
   minio-buckets:
     image: quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z
     depends_on:
       - minio
     restart: on-failure
-    volumes:
-      - ./scripts/setup-bucket.sh:/home/setup-bucket.sh
-      - bucket-init-data:/home/init-data
     entrypoint: >
       /bin/sh -c "
-      /home/setup-bucket.sh
       sleep 1;
       /usr/bin/mc alias set dockerminio http://minio:9000 root beak-lamp-blind;
       exit 0;
       "
-    networks:
-      - network-minio
 
 volumes:
     data-minio:
-    bucket-init-data:
-
-networks:
-    network-minio:
+      driver: local
+      driver_opts:
+        type: tmpfs
+        device: tmpfs
+        o: size=30g
+    caddy_data:
+    caddy_config:

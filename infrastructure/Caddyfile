@@ -1,0 +1,65 @@
+{
+    servers :8081 {
+        protocols h1
+    }
+
+    servers :8091 {
+        protocols h1
+    }
+
+    servers :8444 {
+        protocols h2
+    }
+
+    servers :9001 {
+        protocols h3
+    }
+}
+
+
+# HTTP/1
+:8081 {
+    # log {
+    #     output stdout
+    #     level DEBUG
+    # }
+    reverse_proxy 127.0.0.1:9000
+}
+
+# HTTP/1 with TLS
+:8091 {
+    tls /etc/caddy/certs/fullchain.pem /etc/caddy/certs/privkey.pem
+    # log {
+    #     output stdout
+    #     level DEBUG
+    # }
+    reverse_proxy 127.0.0.1:9000
+}
+
+# HTTP/2
+:8444 {
+    tls /etc/caddy/certs/fullchain.pem /etc/caddy/certs/privkey.pem
+    # log {
+    #     output stdout
+    #     level DEBUG
+    # }
+    reverse_proxy 127.0.0.1:9000 {
+        transport http {
+            compression off
+        }
+    }
+}
+
+# HTTP/3
+:9001 {
+    tls /etc/caddy/certs/fullchain.pem /etc/caddy/certs/privkey.pem
+    # log {
+    #     output stdout
+    #     level DEBUG
+    # }
+    reverse_proxy 127.0.0.1:9000 {
+        transport http {
+            compression off
+        }
+    }
+}

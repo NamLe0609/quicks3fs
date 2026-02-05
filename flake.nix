@@ -81,6 +81,9 @@
 
               # Plotting
               uv
+
+              # Warp
+              go
             ];
 
             env = {
