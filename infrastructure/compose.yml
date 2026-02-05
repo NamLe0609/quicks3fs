@@ -38,6 +38,7 @@ services:
     restart: on-failure
     volumes:
       - ./scripts/setup-bucket.sh:/home/setup-bucket.sh
+      - bucket-init-data:/home/init-data
     entrypoint: >
       /bin/sh -c "
       /home/setup-bucket.sh
@@ -50,6 +51,7 @@ services:
 
 volumes:
     data-minio:
+    bucket-init-data:
 
 networks:
     network-minio:

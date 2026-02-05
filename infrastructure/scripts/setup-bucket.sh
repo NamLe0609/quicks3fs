@@ -1,6 +1,8 @@
 #!/bin/sh
 
-if [ -f /home/init_done.marker ]; then
+MARKER_FILE="/home/init-data/init_done.marker"
+
+if [ -f $MARKER_FILE ]; then
     echo "MinIO buckets already initialized. Skipping."
     exit 0
 fi
@@ -17,4 +19,4 @@ for size in $sizes; do
     rm "/tmp/${filename}"    
 done
 
-touch /home/init_done.marker
+touch "$MARKER_FILE"

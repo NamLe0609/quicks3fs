@@ -69,8 +69,18 @@
               openssl
               curlFull
               minio-client
-              tcpdump
+              samply
 
+              # Networking tools
+              tcpdump
+              ethtool
+              iperf3
+
+              # UDP benchmarks
+              sockperf
+
+              # Plotting
+              uv
             ];
 
             env = {
