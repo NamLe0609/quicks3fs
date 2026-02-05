@@ -69,18 +69,13 @@
               openssl
               curlFull
               minio-client
+              tcpdump
 
-              cmake
-              fontconfig
-              pkg-config
-              llvmPackages.libclang.lib
             ];
 
             env = {
               # Required by rust-analyzer
               RUST_SRC_PATH = "${pkgs.rustToolchain}/lib/rustlib/src/rust/library";
-              LIBCLANG_PATH = "${pkgs.llvmPackages.libclang.lib}/lib/";
-              BINDGEN_EXTRA_CLANG_ARGS = "$BINDGEN_EXTRA_CLANG_ARGS -I${pkgs.glibc.dev}/include";
             };
           };
         }
