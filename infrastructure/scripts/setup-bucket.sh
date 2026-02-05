@@ -7,8 +7,7 @@ sizes="4KB 8KB 16KB 32KB 64KB 128KB 256KB 512KB 1MB 2MB 4MB 8MB 16MB 32MB 64MB 1
 
 for size in $sizes; do
     filename="file-${size}.dat"
-    echo "Generating ${filename}..."
-    /usr/bin/mc data generate "/tmp/${filename}" "${size}"
-    /usr/bin/mc cp "/tmp/${filename}" dockerminio/test/
-    rm "/tmp/${filename}"
+    head -c $size </dev/urandom > "/tmp/${filename}"    
+    mc cp "/tmp/${filename}" dockerminio/test/
+    rm "/tmp/${filename}"    
 done
