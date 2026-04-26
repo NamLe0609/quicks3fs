@@ -1,6 +1,6 @@
 services:
   grafana:
-    image: grafana/grafana:main
+    image: grafana/grafana:13.1.0-25141410377-ubuntu
     container_name: grafana
     network_mode: host
     volumes:
